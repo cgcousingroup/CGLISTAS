@@ -43,24 +43,29 @@ def enviar_git():
             logging.warning("⚠️ grupos.json não encontrado. Abortando envio.")
             return
 
+        # Git config
         subprocess.run(["git", "config", "user.name", GIT_NOME], check=True)
         subprocess.run(["git", "config", "user.email", GIT_EMAIL], check=True)
 
         url_autenticada = f"git@github.com:{GIT_USER}/{GIT_REPO}.git"
         subprocess.run(["git", "remote", "set-url", "origin", url_autenticada], check=True)
 
+        # Garante que alterações locais sejam salvas
         subprocess.run(["git", "add", JSON_PATH], check=True)
-        subprocess.run(["git", "commit", "--allow-empty", "-m", f"🔄 Atualização automática - {now}"], check=True)
+        subprocess.run(["git", "commit", "-m", f"🔄 Atualização automática - {now}"], check=True)
 
+        # Tenta rebase (vai falhar se já commitou, mas é seguro)
         try:
             subprocess.run(["git", "pull", "--rebase", "origin", GIT_BRANCH], check=True)
         except subprocess.CalledProcessError as e:
-            logging.warning(f"⚠️ Pull falhou, mas seguindo com push: {e}")
+            logging.warning(f"⚠️ Pull falhou, mas forçando push mesmo assim: {e}")
 
-        subprocess.run(["git", "push", "origin", GIT_BRANCH], check=True)
-        logging.info("✅ grupos.json enviado ao GitHub.")
+        # Push final com força bruta
+        subprocess.run(["git", "push", "--force", "origin", GIT_BRANCH], check=True)
+        logging.info("✅ grupos.json enviado ao GitHub com push forçado.")
     except subprocess.CalledProcessError as e:
         logging.warning(f"❌ Erro ao executar Git: {e}")
+
 
 # ================= UTILITÁRIOS =================
 
@@ -165,10 +170,9 @@ async def divulgar(bot, limite_botoes=2):
                 parse_mode="Markdown",
                 disable_web_page_preview=True
             )
-
+            salvar_grupos(grupos)
             enviar_git()
             await asyncio.sleep(1)
-
         except Exception as e:
             logging.warning(f"Erro ao enviar para {grupo['nome']}: {e}")
 
@@ -188,6 +192,13 @@ def main():
                     await divulgar(app.bot, limite_botoes=2)
                 except Exception as e:
                     logging.warning(f"❌ Erro durante disparo: {e}")
+
+                # 🔁 Atualiza o Git mesmo que não haja envio
+                try:
+                    enviar_git()
+                except Exception as e:
+                    logging.warning(f"⚠️ Falha ao atualizar Git após ciclo: {e}")
+
                 await asyncio.sleep(10)
 
         asyncio.create_task(disparos_automaticos())
