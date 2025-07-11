@@ -2,7 +2,6 @@ import os
 import subprocess
 from datetime import datetime
 import logging
-from types import SimpleNamespace
 import asyncio
 import json
 import random
@@ -49,16 +48,13 @@ def enviar_git():
         url_autenticada = f"git@github.com:{GIT_USER}/{GIT_REPO}.git"
         subprocess.run(["git", "remote", "set-url", "origin", url_autenticada], check=True)
 
-        # Adiciona e comita alterações no JSON
         subprocess.run(["git", "add", JSON_PATH], check=True)
-        subprocess.run(["git", "commit", "-m", f"🔄 Atualização automática - {now}"], check=True)
+        subprocess.run(["git", "commit", JSON_PATH, "-m", f"🔄 Atualização automática - {now}"], check=True)
 
-        # Protege alterações locais com stash antes de rebase
         subprocess.run(["git", "stash", "push", "--include-untracked"], check=True)
 
         try:
             subprocess.run(["git", "pull", "--rebase", "origin", GIT_BRANCH], check=True)
-            # Restaura alterações locais após o rebase
             subprocess.run(["git", "stash", "pop"], check=True)
         except subprocess.CalledProcessError as e:
             logging.warning(f"⚠️ Pull falhou, mas forçando push mesmo assim: {e}")
@@ -114,7 +110,6 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if bot_info.status == "administrator":
             adicionar_grupo(chat.id, chat.title)
 
-            # ✅ Sincroniza após adicionar
             salvar_grupos(carregar_grupos())
             enviar_git()
 
@@ -177,7 +172,14 @@ async def divulgar(bot, limite_botoes=2):
                 parse_mode="Markdown",
                 disable_web_page_preview=True
             )
-            salvar_grupos(grupos)
+
+            # ✅ Protege estado do JSON antes de salvar
+            estado_atual = carregar_grupos()
+            todos = {g["id"]: g for g in estado_atual}
+            todos.update({g["id"]: g for g in grupos})
+            grupos_final = list(todos.values())
+
+            salvar_grupos(grupos_final)
             enviar_git()
             await asyncio.sleep(1)
         except Exception as e:
@@ -199,10 +201,12 @@ def main():
                     await divulgar(app.bot, limite_botoes=2)
                 except Exception as e:
                     logging.warning(f"❌ Erro durante disparo: {e}")
+
                 try:
                     enviar_git()
                 except Exception as e:
                     logging.warning(f"⚠️ Falha ao atualizar Git após ciclo: {e}")
+
                 await asyncio.sleep(10)
 
         asyncio.create_task(disparos_automaticos())
