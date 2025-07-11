@@ -128,7 +128,7 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 # ================= DIVULGAÇÃO AUTOMÁTICA =================
 
-async def divulgar(bot, limite_botoes=2):
+async def divulgar(bot, limite_botoes=5):
     grupos = carregar_grupos()
     if not grupos:
         logging.info("⚠️ Nenhum grupo disponível para divulgação.")
@@ -198,7 +198,7 @@ def main():
             while True:
                 logging.info("🚀 Disparo automático iniciado")
                 try:
-                    await divulgar(app.bot, limite_botoes=2)
+                    await divulgar(app.bot, limite_botoes=5)
                 except Exception as e:
                     logging.warning(f"❌ Erro durante disparo: {e}")
 
