@@ -49,11 +49,17 @@ def enviar_git():
         url_autenticada = f"git@github.com:{GIT_USER}/{GIT_REPO}.git"
         subprocess.run(["git", "remote", "set-url", "origin", url_autenticada], check=True)
 
+        # Adiciona e comita alterações no JSON
         subprocess.run(["git", "add", JSON_PATH], check=True)
         subprocess.run(["git", "commit", "-m", f"🔄 Atualização automática - {now}"], check=True)
 
+        # Protege alterações locais com stash antes de rebase
+        subprocess.run(["git", "stash", "push", "--include-untracked"], check=True)
+
         try:
             subprocess.run(["git", "pull", "--rebase", "origin", GIT_BRANCH], check=True)
+            # Restaura alterações locais após o rebase
+            subprocess.run(["git", "stash", "pop"], check=True)
         except subprocess.CalledProcessError as e:
             logging.warning(f"⚠️ Pull falhou, mas forçando push mesmo assim: {e}")
 
@@ -61,6 +67,7 @@ def enviar_git():
         logging.info("✅ grupos.json enviado ao GitHub com push forçado.")
     except subprocess.CalledProcessError as e:
         logging.warning(f"❌ Erro ao executar Git: {e}")
+
 
 # ================= UTILITÁRIOS =================
 
