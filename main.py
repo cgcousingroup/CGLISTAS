@@ -1,6 +1,4 @@
 import logging
-import os
-import json
 import asyncio
 import random
 from telegram import (
@@ -25,7 +23,7 @@ PLANILHA_NOME = "CGLISTAS - GRUPOS"
 CREDENCIAL_PATH = "credenciais.json"
 
 INTERVALO_DISPARO = 3600  # ⏱ tempo em segundos entre ciclos
-LIMITAR_BOTOES = 30      # 🔢 quantidade de botões por ciclo
+LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,8 +31,7 @@ logging.basicConfig(level=logging.INFO)
 
 def conectar_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    credenciais_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciais_dict, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENCIAL_PATH, scope)
     client = gspread.authorize(creds)
     sheet = client.open(PLANILHA_NOME).sheet1
     return sheet
@@ -215,7 +212,6 @@ def main():
 
     async def run_bot():
         async def disparos_automaticos():
-            logging.info("📡 Entramos no disparos_automaticos() com sucesso")
             while True:
                 logging.info("🚀 Iniciando ciclo de divulgação")
                 try:
@@ -224,12 +220,13 @@ def main():
                     logging.warning(f"❌ Erro durante disparo: {e}")
                 await asyncio.sleep(INTERVALO_DISPARO)
 
-        await asyncio.gather(
-            app.run_polling(),
-            disparos_automaticos()
-        )
+        asyncio.create_task(disparos_automaticos())
+        await app.run_polling()
 
     import nest_asyncio
     nest_asyncio.apply()
 
     asyncio.get_event_loop().run_until_complete(run_bot())
+
+if __name__ == "__main__":
+    main()
