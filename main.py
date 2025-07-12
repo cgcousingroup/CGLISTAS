@@ -1,9 +1,6 @@
 import logging
 import asyncio
 import random
-import os
-import json
-import gspread
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -16,27 +13,32 @@ from telegram.ext import (
     ChatMemberHandler,
     ContextTypes,
 )
-from google.oauth2.service_account import Credentials
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import os
+import json
+
 
 # =============== CONFIGURAÇÕES ===============
 
 TOKEN = "7516174786:AAESsqNGZfOZupLTqDdOB0I_redMH6aEcHc"
 PLANILHA_NOME = "CGLISTAS - GRUPOS"
 
-INTERVALO_DISPARO = 3600  # tempo entre ciclos (1h)
-LIMITAR_BOTOES = 5
+INTERVALO_DISPARO = 60  # ⏱ tempo em segundos entre ciclos
+LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
 
 logging.basicConfig(level=logging.INFO)
 
 # =============== CONEXÃO COM GOOGLE SHEETS ===============
 
 def conectar_sheets():
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
-    credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    client = gspread.authorize(credentials)
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    credenciais_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciais_dict, scope)
+    client = gspread.authorize(creds)
     sheet = client.open(PLANILHA_NOME).sheet1
     return sheet
+
 
 def carregar_grupos():
     sheet = conectar_sheets()
@@ -227,6 +229,7 @@ def main():
 
     import nest_asyncio
     nest_asyncio.apply()
+
     asyncio.get_event_loop().run_until_complete(run_bot())
 
 if __name__ == "__main__":
