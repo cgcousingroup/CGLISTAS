@@ -128,7 +128,7 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 # ================= DIVULGAÇÃO AUTOMÁTICA =================
 
-async def divulgar(bot, limite_botoes=5):
+async def divulgar(bot, limite_botoes=30):
     grupos = carregar_grupos()
     if not grupos:
         logging.info("⚠️ Nenhum grupo disponível para divulgação.")
@@ -198,7 +198,7 @@ def main():
             while True:
                 logging.info("🚀 Disparo automático iniciado")
                 try:
-                    await divulgar(app.bot, limite_botoes=5)
+                    await divulgar(app.bot, limite_botoes=30)
                 except Exception as e:
                     logging.warning(f"❌ Erro durante disparo: {e}")
 
@@ -207,7 +207,7 @@ def main():
                 except Exception as e:
                     logging.warning(f"⚠️ Falha ao atualizar Git após ciclo: {e}")
 
-                await asyncio.sleep(10)
+                await asyncio.sleep(2)
 
         asyncio.create_task(disparos_automaticos())
         await app.run_polling()
