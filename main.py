@@ -14,7 +14,7 @@ from telegram.ext import (
     ContextTypes,
 )
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
 # =============== CONFIGURAÇÕES ===============
 
@@ -30,10 +30,10 @@ logging.basicConfig(level=logging.INFO)
 # =============== CONEXÃO COM GOOGLE SHEETS ===============
 
 def conectar_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    credenciais_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciais_dict, scope)
-    client = gspread.authorize(creds)
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))  # variável vinda do Railway
+    credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    client = gspread.authorize(credentials)
     sheet = client.open(PLANILHA_NOME).sheet1
     return sheet
 
