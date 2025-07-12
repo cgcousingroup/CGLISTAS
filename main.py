@@ -207,7 +207,7 @@ def main():
                 except Exception as e:
                     logging.warning(f"⚠️ Falha ao atualizar Git após ciclo: {e}")
 
-                await asyncio.sleep(300)
+                await asyncio.sleep(3600)
 
         asyncio.create_task(disparos_automaticos())
         await app.run_polling()
