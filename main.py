@@ -25,7 +25,7 @@ TOKEN = "7516174786:AAESsqNGZfOZupLTqDdOB0I_redMH6aEcHc"
 PLANILHA_NOME = "CGLISTAS - GRUPOS"
 CREDENCIAL_PATH = "credenciais.json"
 
-INTERVALO_DISPARO = 60  # ⏱ tempo em segundos entre ciclos
+INTERVALO_DISPARO = 3600  # ⏱ tempo em segundos entre ciclos
 LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
 
 logging.basicConfig(level=logging.INFO)
