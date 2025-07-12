@@ -15,14 +15,15 @@ from telegram.ext import (
 )
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import os
+import base64
 import json
-
+import os
 
 # =============== CONFIGURAÇÕES ===============
 
 TOKEN = "7516174786:AAESsqNGZfOZupLTqDdOB0I_redMH6aEcHc"
 PLANILHA_NOME = "CGLISTAS - GRUPOS"
+CREDENCIAL_PATH = "credenciais.json"
 
 INTERVALO_DISPARO = 60  # ⏱ tempo em segundos entre ciclos
 LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
@@ -33,12 +34,14 @@ logging.basicConfig(level=logging.INFO)
 
 def conectar_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    credenciais_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciais_dict, scope)
+    creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
+    if not creds_b64:
+        raise Exception("❌ Variável GOOGLE_CREDENTIALS_B64 não definida.")
+    creds_json = json.loads(base64.b64decode(creds_b64).decode("utf-8"))
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
     client = gspread.authorize(creds)
     sheet = client.open(PLANILHA_NOME).sheet1
     return sheet
-
 
 def carregar_grupos():
     sheet = conectar_sheets()
