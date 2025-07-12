@@ -23,7 +23,7 @@ PLANILHA_NOME = "CGLISTAS - GRUPOS"
 CREDENCIAL_PATH = "credenciais.json"
 
 INTERVALO_DISPARO = 3600  # ⏱ tempo em segundos entre ciclos
-LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
+LIMITAR_BOTOES = 30      # 🔢 quantidade de botões por ciclo
 
 logging.basicConfig(level=logging.INFO)
 
