@@ -1,6 +1,9 @@
 import logging
 import asyncio
 import random
+import os
+import json
+import gspread
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -13,17 +16,15 @@ from telegram.ext import (
     ChatMemberHandler,
     ContextTypes,
 )
-import gspread
 from google.oauth2.service_account import Credentials
 
 # =============== CONFIGURAÇÕES ===============
 
 TOKEN = "7516174786:AAESsqNGZfOZupLTqDdOB0I_redMH6aEcHc"
 PLANILHA_NOME = "CGLISTAS - GRUPOS"
-CREDENCIAL_PATH = "credenciais.json"
 
-INTERVALO_DISPARO = 3600  # ⏱ tempo em segundos entre ciclos
-LIMITAR_BOTOES = 5      # 🔢 quantidade de botões por ciclo
+INTERVALO_DISPARO = 3600  # tempo entre ciclos (1h)
+LIMITAR_BOTOES = 5
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,7 +32,7 @@ logging.basicConfig(level=logging.INFO)
 
 def conectar_sheets():
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))  # variável vinda do Railway
+    creds_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
     credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(credentials)
     sheet = client.open(PLANILHA_NOME).sheet1
@@ -226,7 +227,6 @@ def main():
 
     import nest_asyncio
     nest_asyncio.apply()
-
     asyncio.get_event_loop().run_until_complete(run_bot())
 
 if __name__ == "__main__":
