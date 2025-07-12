@@ -215,6 +215,7 @@ def main():
 
     async def run_bot():
         async def disparos_automaticos():
+            logging.info("📡 Entramos no disparos_automaticos() com sucesso")
             while True:
                 logging.info("🚀 Iniciando ciclo de divulgação")
                 try:
@@ -223,13 +224,12 @@ def main():
                     logging.warning(f"❌ Erro durante disparo: {e}")
                 await asyncio.sleep(INTERVALO_DISPARO)
 
-        asyncio.create_task(disparos_automaticos())
-        await app.run_polling()
+        await asyncio.gather(
+            app.run_polling(),
+            disparos_automaticos()
+        )
 
     import nest_asyncio
     nest_asyncio.apply()
 
     asyncio.get_event_loop().run_until_complete(run_bot())
-
-if __name__ == "__main__":
-    main()
