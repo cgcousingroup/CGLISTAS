@@ -1,4 +1,6 @@
 import logging
+import os
+import json
 import asyncio
 import random
 from telegram import (
@@ -31,7 +33,8 @@ logging.basicConfig(level=logging.INFO)
 
 def conectar_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENCIAL_PATH, scope)
+    credenciais_dict = json.loads(os.getenv("GOOGLE_SERVICE_CREDS"))
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciais_dict, scope)
     client = gspread.authorize(creds)
     sheet = client.open(PLANILHA_NOME).sheet1
     return sheet
